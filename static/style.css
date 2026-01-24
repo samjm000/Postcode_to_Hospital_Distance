@@ -33,7 +33,7 @@ body {
     font-size: 15px;
     line-height: 1.6;
     color: var(--text);
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #fbbf24 75%, #17a2b8 100%);
+    background: linear-gradient(135deg, #06b6d4 0%, #0891b2 25%, #10b981 50%, #14b8a6 75%, #3b82f6 100%);
     background-size: 400% 400%;
     animation: gradientShift 15s ease infinite;
     min-height: 100vh;
@@ -65,11 +65,10 @@ body::before {
 
 /* Header */
 header {
-    background: rgba(255, 255, 255, 0.7);
-    backdrop-filter: blur(10px);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+    background: #ffffff;
+    border-bottom: 2px solid #e5e7eb;
     padding: 1.5rem 1.5rem;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .header-content {
@@ -132,7 +131,7 @@ main {
     left: 0;
     right: 0;
     height: 4px;
-    background: linear-gradient(90deg, #17a2b8, #fbbf24, #667eea);
+    background: linear-gradient(90deg, #06b6d4, #10b981, #14b8a6);
     background-size: 200% 100%;
     animation: shimmer 3s ease-in-out infinite;
 }
@@ -291,24 +290,25 @@ main {
 
 /* Drop Zone */
 .drop-zone {
-    border: 2px dashed var(--border);
+    border: 2px dashed #f59e0b;
     border-radius: var(--radius-sm);
     padding: 2rem 1rem;
     text-align: center;
     cursor: pointer;
     transition: all 0.2s;
+    background: linear-gradient(135deg, #fef3c7 0%, #fed7aa 100%);
 }
 
 .drop-zone:hover,
 .drop-zone.dragover {
-    border-color: var(--primary);
-    background: var(--primary-light);
+    border-color: #f59e0b;
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
 }
 
 .upload-icon {
     width: 40px;
     height: 40px;
-    color: var(--text-muted);
+    color: #f59e0b;
     margin-bottom: 0.75rem;
 }
 
@@ -321,7 +321,7 @@ main {
 .browse-link {
     background: none;
     border: none;
-    color: var(--primary);
+    color: #ea580c;
     font-weight: 600;
     cursor: pointer;
     font-size: inherit;
@@ -329,6 +329,7 @@ main {
 
 .browse-link:hover {
     text-decoration: underline;
+    color: #c2410c;
 }
 
 .drop-hint {
@@ -458,17 +459,17 @@ main {
     font-size: 0.95rem;
     font-weight: 600;
     color: white;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #0891b2 0%, #10b981 100%);
     border: none;
     border-radius: var(--radius-sm);
     cursor: pointer;
     transition: all 0.3s, transform 0.1s;
-    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
 }
 
 .btn-submit:hover:not(:disabled) {
-    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
-    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+    background: linear-gradient(135deg, #10b981 0%, #0891b2 100%);
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.6);
     transform: translateY(-2px);
 }
 

@@ -157,7 +157,7 @@ def process_csv():
             return jsonify({"error": f"Invalid destination: {dest_id}"}), 400
 
     try:
-        # Read file based on extension
+        # Read file based on extension (preserve original data types and formatting)
         if filename.endswith(".csv"):
             df = pd.read_csv(file)
         else:
@@ -174,8 +174,12 @@ def process_csv():
         if postcode_col is None:
             return jsonify({"error": "File must contain a column with 'postcode' in the name"}), 400
 
-        # Clean postcodes
+        # Clean postcodes for API calls (normalize to uppercase, but keep originals unchanged in dataframe)
+        # This handles any capitalization: "G1 1AA", "g1 1aa", "G1 1aa" all work
         postcodes = df[postcode_col].astype(str).str.strip().str.upper().tolist()
+
+        # Store original column order
+        original_columns = df.columns.tolist()
 
         # Calculate distances for each selected destination
         for dest_id in selected_destinations:
@@ -205,6 +209,10 @@ def process_csv():
                         "error": f"All distance calculations failed for {dest['name']}. "
                                  "Please check your API key and ensure the Distance Matrix API is enabled."
                     }), 400
+
+        # Reorder columns: original columns first, then new calculated columns
+        new_columns = [col for col in df.columns if col not in original_columns]
+        df = df[original_columns + new_columns]
 
         # Convert dataframe to CSV string
         output = io.StringIO()
