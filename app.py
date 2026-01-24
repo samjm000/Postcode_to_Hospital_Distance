@@ -182,13 +182,20 @@ def process_csv():
             dest = destinations[dest_id]
             short_name = dest["short_name"]
 
-            distances, durations, errors = calculate_distances(
-                postcodes, dest["address"], api_key
+            # Calculate driving times and distances
+            distances, driving_durations, errors = calculate_distances(
+                postcodes, dest["address"], api_key, mode="driving"
+            )
+
+            # Calculate public transport times
+            _, transit_durations, transit_errors = calculate_distances(
+                postcodes, dest["address"], api_key, mode="transit"
             )
 
             # Add columns to dataframe
             df[f"Distance to {short_name} (km)"] = distances
-            df[f"Travel Time to {short_name} (mins)"] = durations
+            df[f"Drive Time to {short_name} (mins)"] = driving_durations
+            df[f"Public Transport to {short_name} (mins)"] = transit_durations
 
             # Check for errors
             if any(errors):
@@ -216,7 +223,7 @@ def process_csv():
         return jsonify({"error": f"Error processing file: {str(e)}"}), 500
 
 
-def calculate_distances(postcodes, destination, api_key):
+def calculate_distances(postcodes, destination, api_key, mode="driving"):
     """
     Calculate distances from postcodes to a destination using Google Maps API.
 
@@ -224,6 +231,7 @@ def calculate_distances(postcodes, destination, api_key):
         postcodes: List of UK postcodes
         destination: Destination address string
         api_key: Google Maps API key
+        mode: Travel mode - 'driving' or 'transit'
 
     Returns:
         Tuple of (distances_km, durations_mins, errors)
@@ -245,7 +253,7 @@ def calculate_distances(postcodes, destination, api_key):
                 params={
                     "origins": "|".join(origins),
                     "destinations": destination,
-                    "mode": "driving",
+                    "mode": mode,
                     "units": "metric",
                     "key": api_key
                 },

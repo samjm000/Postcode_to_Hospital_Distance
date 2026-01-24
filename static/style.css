@@ -4,6 +4,8 @@
     --primary: #0066cc;
     --primary-dark: #0052a3;
     --primary-light: #e6f0ff;
+    --accent: #17a2b8;
+    --accent-yellow: #fbbf24;
     --success: #10b981;
     --success-light: #d1fae5;
     --error: #ef4444;
@@ -12,7 +14,7 @@
     --text-muted: #6b7280;
     --text-light: #9ca3af;
     --bg: #f8fafc;
-    --card-bg: #ffffff;
+    --card-bg: rgba(255, 255, 255, 0.9);
     --border: #e5e7eb;
     --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
@@ -31,37 +33,59 @@ body {
     font-size: 15px;
     line-height: 1.6;
     color: var(--text);
-    background: var(--bg);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #fbbf24 75%, #17a2b8 100%);
+    background-size: 400% 400%;
+    animation: gradientShift 15s ease infinite;
     min-height: 100vh;
+    position: relative;
+}
+
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(100px);
+    z-index: 0;
+}
+
+@keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
 }
 
 .app-container {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+    position: relative;
+    z-index: 1;
 }
 
 /* Header */
 header {
-    background: var(--card-bg);
-    border-bottom: 1px solid var(--border);
-    padding: 1rem 1.5rem;
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 1.5rem 1.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
 }
 
 .header-content {
     max-width: 600px;
     margin: 0 auto;
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
 }
 
 .logo {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    font-weight: 600;
-    font-size: 1rem;
+    gap: 1rem;
+    font-weight: 700;
+    font-size: 1.5rem;
     color: var(--text);
 }
 
@@ -72,7 +96,7 @@ header {
 }
 
 .logo-img {
-    height: 32px;
+    height: 48px;
     width: auto;
 }
 
@@ -87,15 +111,35 @@ main {
 
 /* Card */
 .card {
-    background: var(--card-bg);
+    background: rgba(255, 255, 255, 0.75);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
     border-radius: var(--radius);
-    box-shadow: var(--shadow);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
     width: 100%;
     max-width: 500px;
 }
 
 .main-card {
     overflow: hidden;
+    position: relative;
+}
+
+.main-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #17a2b8, #fbbf24, #667eea);
+    background-size: 200% 100%;
+    animation: shimmer 3s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
 }
 
 .card-header {
@@ -196,7 +240,7 @@ main {
     font-size: 0.9rem;
     border: 1px solid var(--border);
     border-radius: var(--radius-sm);
-    background: var(--card-bg);
+    background: rgba(255, 255, 255, 0.6);
     color: var(--text);
     transition: border-color 0.2s, box-shadow 0.2s;
 }
@@ -414,15 +458,18 @@ main {
     font-size: 0.95rem;
     font-weight: 600;
     color: white;
-    background: var(--primary);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     border: none;
     border-radius: var(--radius-sm);
     cursor: pointer;
-    transition: background 0.2s, transform 0.1s;
+    transition: all 0.3s, transform 0.1s;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
 }
 
 .btn-submit:hover:not(:disabled) {
-    background: var(--primary-dark);
+    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+    transform: translateY(-2px);
 }
 
 .btn-submit:active:not(:disabled) {
@@ -578,9 +625,11 @@ main {
 
 .modal-content {
     position: relative;
-    background: var(--card-bg);
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
     border-radius: var(--radius);
-    box-shadow: var(--shadow-lg);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
     width: 100%;
     max-width: 500px;
     max-height: 80vh;
