@@ -510,6 +510,7 @@ main {
     gap: 0.75rem;
     width: 100%;
     max-width: 280px;
+    margin: 0 auto;
 }
 
 /* Status Cards */
@@ -519,17 +520,22 @@ main {
 
 .status-content {
     padding: 3rem 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .status-content h2 {
     font-size: 1.25rem;
     font-weight: 600;
     margin-bottom: 0.5rem;
+    text-align: center;
 }
 
 .status-content p {
     color: var(--text-muted);
     margin-bottom: 1.5rem;
+    text-align: center;
 }
 
 /* Spinner */
