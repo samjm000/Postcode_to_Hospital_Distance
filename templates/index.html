@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Postcode to Hospital Distance Calculator</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <div class="header-content">
+                <div class="logo">
+                    <img src="/static/logo.png" alt="DTC Logo" class="logo-img">
+                    <span>Distance Calculator</span>
+                </div>
+            </div>
+        </header>
+
+        <main>
+            <!-- Main Form Card -->
+            <div id="main-form" class="card main-card">
+                <div class="card-header">
+                    <h1>Calculate Travel Distances</h1>
+                    <p class="subtitle">Upload postcodes and get distances to NHS hospitals</p>
+                </div>
+
+                <div class="card-body">
+                    <!-- API Key Input -->
+                    <div class="form-group">
+                        <label for="api-key">Google Maps API Key</label>
+                        <div class="input-wrapper">
+                            <input type="password" id="api-key" placeholder="Paste your API key here" autocomplete="off">
+                            <button type="button" id="toggle-key" class="toggle-btn" title="Toggle visibility">
+                                <svg class="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                    <circle cx="12" cy="12" r="3"/>
+                                </svg>
+                            </button>
+                        </div>
+                        <a href="https://developers.google.com/maps/documentation/distance-matrix/get-api-key" target="_blank" rel="noopener" class="help-link">How to get an API key</a>
+                    </div>
+
+                    <!-- File Upload -->
+                    <div class="form-group">
+                        <label>Upload CSV File</label>
+                        <div id="drop-zone" class="drop-zone">
+                            <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                <polyline points="17 8 12 3 7 8"/>
+                                <line x1="12" y1="3" x2="12" y2="15"/>
+                            </svg>
+                            <span class="drop-text">Drop CSV here or <button type="button" id="browse-btn" class="browse-link">browse</button></span>
+                            <span class="drop-hint">CSV or Excel file with a 'postcode' column</span>
+                        </div>
+                        <input type="file" id="file-input" accept=".csv,.xlsx,.xls" hidden>
+                        <div id="file-info" class="file-info hidden">
+                            <svg class="file-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                <polyline points="14 2 14 8 20 8"/>
+                            </svg>
+                            <span id="file-name"></span>
+                            <button type="button" id="remove-file" class="remove-btn" title="Remove file">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="18" y1="6" x2="6" y2="18"/>
+                                    <line x1="6" y1="6" x2="18" y2="18"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Destinations -->
+                    <div class="form-group">
+                        <div class="label-row">
+                            <label>Destination Hospitals</label>
+                            <button type="button" id="manage-destinations-btn" class="manage-link">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="3"/>
+                                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                                </svg>
+                                Manage
+                            </button>
+                        </div>
+                        <div id="destinations-list" class="destinations-grid">
+                            <!-- Destinations loaded dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="button" id="process-btn" class="btn-submit" disabled>
+                        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <polyline points="12 6 12 12 16 14"/>
+                        </svg>
+                        Calculate Distances
+                    </button>
+                </div>
+
+                <div class="card-footer">
+                    <p class="disclaimer">For authorised use only. Do not upload patient identifiable data unless running locally on a secure network. Your API key is not stored.</p>
+                </div>
+            </div>
+
+            <!-- Progress State -->
+            <div id="progress-section" class="card status-card hidden">
+                <div class="status-content">
+                    <div class="spinner"></div>
+                    <h2>Processing</h2>
+                    <p id="progress-text">Calculating distances...</p>
+                </div>
+            </div>
+
+            <!-- Success State -->
+            <div id="results-section" class="card status-card hidden">
+                <div class="status-content success">
+                    <div class="status-icon success-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                            <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                    </div>
+                    <h2>Complete</h2>
+                    <p id="results-text"></p>
+                    <div class="button-group">
+                        <button type="button" id="download-btn" class="btn-submit">
+                            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                <polyline points="7 10 12 15 17 10"/>
+                                <line x1="12" y1="15" x2="12" y2="3"/>
+                            </svg>
+                            Download Results
+                        </button>
+                        <button type="button" id="reset-btn" class="btn-secondary">Process Another File</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Error State -->
+            <div id="error-section" class="card status-card hidden">
+                <div class="status-content error">
+                    <div class="status-icon error-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                            <line x1="18" y1="6" x2="6" y2="18"/>
+                            <line x1="6" y1="6" x2="18" y2="18"/>
+                        </svg>
+                    </div>
+                    <h2>Error</h2>
+                    <p id="error-text"></p>
+                    <button type="button" id="error-reset-btn" class="btn-secondary">Try Again</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="modal hidden">
+        <div class="modal-backdrop"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Manage Destinations</h2>
+                <button type="button" id="close-settings" class="close-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="destinations-manager">
+                    <!-- Destinations list will be rendered here -->
+                </div>
+                <button type="button" id="add-destination-btn" class="btn-add">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="5" x2="12" y2="19"/>
+                        <line x1="5" y1="12" x2="19" y2="12"/>
+                    </svg>
+                    Add Hospital
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Destination Modal -->
+    <div id="destination-form-modal" class="modal hidden">
+        <div class="modal-backdrop"></div>
+        <div class="modal-content modal-small">
+            <div class="modal-header">
+                <h2 id="destination-form-title">Add Hospital</h2>
+                <button type="button" id="close-destination-form" class="close-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="destination-form">
+                    <input type="hidden" id="dest-edit-id">
+                    <div class="form-group">
+                        <label for="dest-name">Hospital Name</label>
+                        <input type="text" id="dest-name" placeholder="e.g. Queen Elizabeth University Hospital" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="dest-short-name">Short Name</label>
+                        <input type="text" id="dest-short-name" placeholder="e.g. QEUH" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="dest-address">Address</label>
+                        <input type="text" id="dest-address" placeholder="e.g. 1345 Govan Rd, Glasgow G51 4TF" required>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" id="cancel-destination" class="btn-secondary">Cancel</button>
+                        <button type="submit" class="btn-submit">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>

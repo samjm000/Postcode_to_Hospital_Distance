@@ -1,0 +1,12 @@
+{
+    "gri": {
+        "name": "Glasgow Royal Infirmary",
+        "address": "84 Castle St, Glasgow G4 0SF",
+        "short_name": "GRI"
+    },
+    "beatson": {
+        "name": "Beatson West of Scotland Cancer Centre",
+        "address": "1053 Great Western Rd, Glasgow G12 0YN",
+        "short_name": "Beatson"
+    }
+}
