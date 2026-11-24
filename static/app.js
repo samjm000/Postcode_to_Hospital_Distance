@@ -44,6 +44,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const closeDestFormBtn = document.getElementById('close-destination-form');
     const cancelDestBtn = document.getElementById('cancel-destination');
 
+    const governanceChecks = ['secure-environment', 'permission', 'external-transfer'].map(id => document.getElementById(id));
     // State
     let selectedFile = null;
     let resultsCsv = null;
@@ -86,13 +87,13 @@ document.addEventListener('DOMContentLoaded', function() {
         for (const [id, dest] of entries) {
             const item = document.createElement('div');
             item.className = 'destination-item selected';
-            item.innerHTML = `
-                <input type="checkbox" id="dest-${id}" name="destination" value="${id}" checked>
-                <label for="dest-${id}">
-                    <span class="name">${dest.name}</span>
-                    <span class="address">${dest.address}</span>
-                </label>
-            `;
+            item.innerHTML = '<input type="checkbox" name="destination" checked><label><span class="name"></span><span class="address"></span></label>';
+            const input = item.querySelector('input');
+            input.id = 'dest-' + id;
+            input.value = id;
+            item.querySelector('label').htmlFor = input.id;
+            item.querySelector('.name').textContent = dest.name;
+            item.querySelector('.address').textContent = dest.address;
 
             const checkbox = item.querySelector('input');
             checkbox.addEventListener('change', () => {
@@ -122,17 +123,17 @@ document.addEventListener('DOMContentLoaded', function() {
             item.className = 'dest-item';
             item.innerHTML = `
                 <div class="dest-item-info">
-                    <div class="dest-item-name">${dest.name} (${dest.short_name})</div>
-                    <div class="dest-item-address">${dest.address}</div>
+                    <div class="dest-item-name"></div>
+                    <div class="dest-item-address"></div>
                 </div>
                 <div class="dest-item-actions">
-                    <button type="button" class="edit-btn" data-id="${id}" title="Edit">
+                    <button type="button" class="edit-btn" title="Edit">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
                             <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
                         </svg>
                     </button>
-                    <button type="button" class="delete-btn" data-id="${id}" title="Delete">
+                    <button type="button" class="delete-btn" title="Delete">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <polyline points="3 6 5 6 21 6"/>
                             <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
@@ -141,6 +142,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
             `;
 
+            item.querySelector('.dest-item-name').textContent = dest.name + ' (' + dest.short_name + ')';
+            item.querySelector('.dest-item-address').textContent = dest.address;
             // Edit button
             item.querySelector('.edit-btn').addEventListener('click', () => openEditForm(id));
 
@@ -162,6 +165,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // API key input
         apiKeyInput.addEventListener('input', validateForm);
+        governanceChecks.forEach(check => check.addEventListener('change', validateForm));
 
         // File drop zone
         dropZone.addEventListener('click', () => fileInput.click());
@@ -380,13 +384,14 @@ document.addEventListener('DOMContentLoaded', function() {
         const hasFile = selectedFile !== null;
         const hasDestinations = document.querySelectorAll('input[name="destination"]:checked').length > 0;
 
-        processBtn.disabled = !(hasApiKey && hasFile && hasDestinations);
+        processBtn.disabled = !(hasApiKey && hasFile && hasDestinations && governanceChecks.every(check => check.checked));
     }
 
     /**
      * Process the uploaded file
      */
     async function processFile() {
+        if (!governanceChecks.every(check => check.checked)) return;
         const apiKey = apiKeyInput.value.trim();
         const selectedDestinations = Array.from(
             document.querySelectorAll('input[name="destination"]:checked')
@@ -400,6 +405,7 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             const formData = new FormData();
             formData.append('file', selectedFile);
+            ['secure_environment', 'permission', 'external_transfer'].forEach(field => formData.append(field, 'yes'));
 
             for (const dest of selectedDestinations) {
                 formData.append('destinations', dest);
@@ -428,6 +434,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
         } catch (error) {
             showError(error.message);
+        } finally {
+            apiKeyInput.value = '';
+            apiKeyInput.type = 'password';
         }
     }
 
@@ -469,6 +478,9 @@ document.addEventListener('DOMContentLoaded', function() {
     function resetForm() {
         selectedFile = null;
         resultsCsv = null;
+        apiKeyInput.value = '';
+        apiKeyInput.type = 'password';
+        governanceChecks.forEach(check => { check.checked = false; });
         fileInput.value = '';
 
         fileInfo.classList.add('hidden');

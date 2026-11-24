@@ -86,6 +86,13 @@
                         </div>
                     </div>
 
+                    <fieldset class="governance-checks">
+                        <legend>Data protection and authorised use</legend>
+                        <p>Postcodes and destination addresses are sent to Google Maps, an external service. Local hosting does not prevent this transfer. Journey times are estimates and have not been formally validated.</p>
+                        <label><input type="checkbox" id="secure-environment"> I confirm I am running this application locally in an organisation-approved secure environment.</label>
+                        <label><input type="checkbox" id="permission"> I confirm I have explicit organisational permission to process these postcodes using the Google Maps API.</label>
+                        <label><input type="checkbox" id="external-transfer"> I understand that postcodes will be transmitted to Google and that patient-derived data requires specific approval covering this transfer.</label>
+                    </fieldset>
                     <!-- Submit Button -->
                     <button type="button" id="process-btn" class="btn-submit" disabled>
                         <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -97,7 +104,7 @@
                 </div>
 
                 <div class="card-footer">
-                    <p class="disclaimer">For authorised use only. Do not upload patient identifiable data unless running locally on a secure network. Your API key is not stored.</p>
+                    <p class="disclaimer">Prototype for authorised use only. Obtain approval before any Google Maps postcode processing. Keep input and output files in the approved environment.</p>
                 </div>
             </div>
 

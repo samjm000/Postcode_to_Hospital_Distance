@@ -1,0 +1,27 @@
+# Data and results
+*.csv
+*.xlsx
+*.xls
+*.parquet
+*.db
+*.sqlite
+*.sqlite3
+data/
+uploads/
+results/
+output/
+# Secrets
+.env
+.env.*
+secrets/
+credentials.json
+*.pem
+*.key
+# Logs and environments
+*.log
+logs/
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
