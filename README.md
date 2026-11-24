@@ -103,6 +103,16 @@ The output CSV will include additional columns:
 
 The API key is supplied at runtime and is not intentionally persisted by the application. This prototype has not been formally approved for clinical deployment; users must follow their local governance and security requirements.
 
+## Security and operational limitations
+
+- Localhost only; do not expose the Flask development server to other users or networks.
+- All three governance acknowledgements are required by the interface and server. They do not replace formal approval.
+- Uploads are limited to 5 MiB and 5,000 rows; invalid or missing postcode formats are rejected before external requests. Format checking does not establish that a postcode exists or is non-personal.
+- Use a restricted API key and appropriate Google Cloud quotas and budget controls. A file of 5,000 rows and three hospitals can generate up to 30,000 billable origin-destination elements (driving and transit).
+- Keep patient data outside the repository. Git ignore rules are a safeguard, not a substitute for checking staged files.
+- Journey distances and times are estimates, not formally validated clinical or transport measures. Check the applicable Google Maps terms before retaining, reusing or publishing results.
+- Confirm permission to distribute the DTC branding and clarify software ownership/licensing before wider redistribution.
+
 ## Troubleshooting
 
 ### "All distance calculations failed"

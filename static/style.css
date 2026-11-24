@@ -837,3 +837,9 @@ main {
         padding: 1.5rem 1rem;
     }
 }
+
+.governance-checks { border: 1px solid #b68b45; border-radius: 8px; padding: 16px; margin: 16px 0; }
+.governance-checks legend { font-weight: 700; padding: 0 6px; }
+.governance-checks p { margin-bottom: 12px; }
+.governance-checks label { display: flex; align-items: flex-start; gap: 8px; margin: 10px 0; font-weight: normal; }
+.governance-checks input { flex: 0 0 auto; margin-top: 4px; }

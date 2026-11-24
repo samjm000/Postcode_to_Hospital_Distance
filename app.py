@@ -8,12 +8,47 @@ to NHS hospitals using the Google Maps Distance Matrix API.
 import io
 import json
 import os
+import re
 import time
 from flask import Flask, render_template, request, jsonify
 import pandas as pd
 import requests
 
 app = Flask(__name__)
+app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024
+MAX_ROWS = 5000
+POSTCODE_RE = re.compile(r'(?:GIR0AA|[A-Z]{1,2}[0-9][0-9A-Z]?[0-9][A-Z]{2})', re.ASCII)
+
+
+def normalize_postcode(value):
+    compact = re.sub(r'\s+', '', str(value).upper())
+    if not POSTCODE_RE.fullmatch(compact):
+        return None
+    return compact[:-3] + ' ' + compact[-3:]
+
+
+@app.errorhandler(413)
+def upload_too_large(_error):
+    return jsonify({'error': 'Upload exceeds the 5 MiB limit.'}), 413
+
+
+@app.before_request
+def restrict_local_requests():
+    if request.host not in ('localhost:5000', '127.0.0.1:5000', '[::1]:5000', 'localhost', '127.0.0.1', '[::1]'):
+        return jsonify({'error': 'Local access only.'}), 403
+    if request.method in ('POST', 'PUT', 'DELETE'):
+        origin = request.headers.get('Origin')
+        if origin and origin != request.host_url.rstrip('/'):
+            return jsonify({'error': 'Cross-origin requests are not permitted.'}), 403
+
+
+@app.after_request
+def security_headers(response):
+    response.headers['Cache-Control'] = 'no-store'
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['Referrer-Policy'] = 'no-referrer'
+    response.headers['Content-Security-Policy'] = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'"
+    return response
 
 # Path to destinations file
 DESTINATIONS_FILE = os.path.join(os.path.dirname(__file__), "destinations.json")
@@ -127,6 +162,10 @@ def process_csv():
     - Google Maps API key in X-API-Key header
     - Selected destination IDs in form data
     """
+    # Acknowledgement is a safeguard, not evidence of governance approval.
+    if any(request.form.get(field) != 'yes' for field in ('secure_environment', 'permission', 'external_transfer')):
+        return jsonify({'error': 'All data protection confirmations are required.'}), 400
+
     # Validate API key
     api_key = request.headers.get("X-API-Key")
     if not api_key:
@@ -159,10 +198,15 @@ def process_csv():
     try:
         # Read file based on extension (preserve original data types and formatting)
         if filename.endswith(".csv"):
-            df = pd.read_csv(file)
+            df = pd.read_csv(file, dtype=str, keep_default_na=False, nrows=MAX_ROWS + 1)
         else:
             # Excel file (.xlsx or .xls)
-            df = pd.read_excel(file)
+            df = pd.read_excel(file, dtype=str, keep_default_na=False, nrows=MAX_ROWS + 1)
+
+        if len(df) > MAX_ROWS:
+            return jsonify({'error': f'File exceeds the {MAX_ROWS} row limit.'}), 400
+        if df.empty:
+            return jsonify({'error': 'File has no data rows.'}), 400
 
         # Find postcode column (case-insensitive, matches columns containing 'postcode')
         postcode_col = None
@@ -176,7 +220,10 @@ def process_csv():
 
         # Clean postcodes for API calls (normalize to uppercase, but keep originals unchanged in dataframe)
         # This handles any capitalization: "G1 1AA", "g1 1aa", "G1 1aa" all work
-        postcodes = df[postcode_col].astype(str).str.strip().str.upper().tolist()
+        postcodes = [normalize_postcode(value) for value in df[postcode_col]]
+        invalid_count = sum(value is None for value in postcodes)
+        if invalid_count:
+            return jsonify({'error': f'{invalid_count} invalid or missing postcode(s). Correct these before processing.'}), 400
 
         # Store original column order
         original_columns = df.columns.tolist()
@@ -228,7 +275,7 @@ def process_csv():
     except pd.errors.EmptyDataError:
         return jsonify({"error": "The uploaded CSV file is empty"}), 400
     except Exception as e:
-        return jsonify({"error": f"Error processing file: {str(e)}"}), 500
+        return jsonify({"error": "Unable to process file. Check file format and try again."}), 500
 
 
 def calculate_distances(postcodes, destination, api_key, mode="driving"):
@@ -268,16 +315,11 @@ def calculate_distances(postcodes, destination, api_key, mode="driving"):
                 timeout=30
             )
 
+            response.raise_for_status()
             data = response.json()
 
-            # Log the response for debugging
-            print(f"API Response status: {data.get('status')}")
-            if data.get("error_message"):
-                print(f"API Error: {data.get('error_message')}")
-
             if data.get("status") != "OK":
-                error_msg = data.get("error_message", data.get("status", "Unknown error"))
-                print(f"Full API response: {data}")
+                error_msg = "Google Maps request failed"
                 for _ in batch:
                     distances.append(None)
                     durations.append(None)
@@ -308,11 +350,11 @@ def calculate_distances(postcodes, destination, api_key, mode="driving"):
             if i + BATCH_SIZE < len(postcodes):
                 time.sleep(0.1)
 
-        except requests.RequestException as e:
+        except (requests.RequestException, ValueError):
             for _ in batch:
                 distances.append(None)
                 durations.append(None)
-                errors.append(str(e))
+                errors.append("Google Maps request failed")
 
     return distances, durations, errors
 
@@ -325,4 +367,4 @@ if __name__ == "__main__":
     print("\nIMPORTANT: This tool requires a Google Maps API key with")
     print("the Distance Matrix API enabled.")
     print("\nPress Ctrl+C to stop the server.\n")
-    app.run(debug=True, host="localhost", port=5000)
+    app.run(debug=False, host="localhost", port=5000)
